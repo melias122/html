@@ -6,9 +6,7 @@ package main
 import (
 	"net/http"
 
-	g "github.com/maragudk/gomponents"
-	c "github.com/maragudk/gomponents/components"
-	. "github.com/maragudk/gomponents/html"
+	. "github.com/melias122/html"
 )
 
 func main() {
@@ -28,25 +26,25 @@ type props struct {
 }
 
 // Page is a whole document to output.
-func Page(p props) g.Node {
-	return c.HTML5(c.HTML5Props{
+func Page(p props) Node {
+	return HTML5(HTML5Props{
 		Title:    p.title,
 		Language: "en",
-		Head: []g.Node{
+		Head: []Node{
 			StyleEl(Type("text/css"),
-				g.Raw("html { font-family: sans-serif; }"),
-				g.Raw("ul { list-style-type: none; margin: 0; padding: 0; overflow: hidden; }"),
-				g.Raw("ul li { display: block; padding: 8px; float: left; }"),
-				g.Raw(".is-active { font-weight: bold; }"),
+				Raw("html { font-family: sans-serif; }"),
+				Raw("ul { list-style-type: none; margin: 0; padding: 0; overflow: hidden; }"),
+				Raw("ul li { display: block; padding: 8px; float: left; }"),
+				Raw(".is-active { font-weight: bold; }"),
 			),
 		},
-		Body: []g.Node{
+		Body: []Node{
 			Navbar(p.path, []PageLink{
 				{Path: "/foo", Name: "Foo"},
 				{Path: "/bar", Name: "Bar"},
 			}),
-			H1(g.Text(p.title)),
-			P(g.Textf("Welcome to the page at %v.", p.path)),
+			H1(Text(p.title)),
+			P(Textf("Welcome to the page at %v.", p.path)),
 		},
 	})
 }
@@ -56,12 +54,12 @@ type PageLink struct {
 	Name string
 }
 
-func Navbar(currentPath string, links []PageLink) g.Node {
+func Navbar(currentPath string, links []PageLink) Node {
 	return Div(
 		Ul(
 			NavbarLink("/", "Home", currentPath),
 
-			g.Group(g.Map(links, func(pl PageLink) g.Node {
+			Group(Map(links, func(pl PageLink) Node {
 				return NavbarLink(pl.Path, pl.Name, currentPath)
 			})),
 		),
@@ -70,6 +68,6 @@ func Navbar(currentPath string, links []PageLink) g.Node {
 	)
 }
 
-func NavbarLink(href, name, currentPath string) g.Node {
-	return Li(A(Href(href), c.Classes{"is-active": currentPath == href}, g.Text(name)))
+func NavbarLink(href, name, currentPath string) Node {
+	return Li(A(Href(href), Classes{"is-active": currentPath == href}, Text(name)))
 }

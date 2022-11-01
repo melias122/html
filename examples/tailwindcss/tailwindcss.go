@@ -7,9 +7,7 @@ import (
 	"net/http"
 	"time"
 
-	g "github.com/maragudk/gomponents"
-	c "github.com/maragudk/gomponents/components"
-	. "github.com/maragudk/gomponents/html"
+	. "github.com/melias122/html"
 )
 
 func main() {
@@ -20,46 +18,46 @@ func main() {
 	_ = http.ListenAndServe("localhost:8080", nil)
 }
 
-func createHandler(title string, body g.Node) http.HandlerFunc {
+func createHandler(title string, body Node) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Rendering a Node is as simple as calling Render and passing an io.Writer
 		_ = Page(title, r.URL.Path, body).Render(w)
 	}
 }
 
-func indexPage() (string, g.Node) {
+func indexPage() (string, Node) {
 	return "Welcome!", Div(
-		H1(g.Text("Welcome to this example page")),
-		P(g.Text("I hope it will make you happy. 😄 It's using TailwindCSS for styling.")),
+		H1(Text("Welcome to this example page")),
+		P(Text("I hope it will make you happy. 😄 It's using TailwindCSS for styling.")),
 	)
 }
 
-func contactPage() (string, g.Node) {
+func contactPage() (string, Node) {
 	return "Contact", Div(
-		H1(g.Text("Contact us")),
-		P(g.Text("Just do it.")),
+		H1(Text("Contact us")),
+		P(Text("Just do it.")),
 	)
 }
 
-func aboutPage() (string, g.Node) {
+func aboutPage() (string, Node) {
 	return "About", Div(
-		H1(g.Text("About this site")),
-		P(g.Text("This is a site showing off gomponents.")),
+		H1(Text("About this site")),
+		P(Text("This is a site showing off gomponents.")),
 	)
 }
 
-func Page(title, path string, body g.Node) g.Node {
+func Page(title, path string, body Node) Node {
 	// HTML5 boilerplate document
-	return c.HTML5(c.HTML5Props{
+	return HTML5(HTML5Props{
 		Title:    title,
 		Language: "en",
-		Head: []g.Node{
+		Head: []Node{
 			Link(Rel("stylesheet"), Href("https://unpkg.com/tailwindcss@2.1.2/dist/base.min.css")),
 			Link(Rel("stylesheet"), Href("https://unpkg.com/tailwindcss@2.1.2/dist/components.min.css")),
 			Link(Rel("stylesheet"), Href("https://unpkg.com/@tailwindcss/typography@0.4.0/dist/typography.min.css")),
 			Link(Rel("stylesheet"), Href("https://unpkg.com/tailwindcss@2.1.2/dist/utilities.min.css")),
 		},
-		Body: []g.Node{
+		Body: []Node{
 			Navbar(path, []PageLink{
 				{Path: "/contact", Name: "Contact"},
 				{Path: "/about", Name: "About"},
@@ -77,14 +75,14 @@ type PageLink struct {
 	Name string
 }
 
-func Navbar(currentPath string, links []PageLink) g.Node {
+func Navbar(currentPath string, links []PageLink) Node {
 	return Nav(Class("bg-gray-700 mb-4"),
 		Container(
 			Div(Class("flex items-center space-x-4 h-16"),
 				NavbarLink("/", "Home", currentPath == "/"),
 
 				// We can Map custom slices to Nodes
-				g.Group(g.Map(links, func(pl PageLink) g.Node {
+				Group(Map(links, func(pl PageLink) Node {
 					return NavbarLink(pl.Path, pl.Name, currentPath == pl.Path)
 				})),
 			),
@@ -93,10 +91,10 @@ func Navbar(currentPath string, links []PageLink) g.Node {
 }
 
 // NavbarLink is a link in the Navbar.
-func NavbarLink(path, text string, active bool) g.Node {
-	return A(Href(path), g.Text(text),
+func NavbarLink(path, text string, active bool) Node {
+	return A(Href(path), Text(text),
 		// Apply CSS classes conditionally
-		c.Classes{
+		Classes{
 			"px-3 py-2 rounded-md text-sm font-medium focus:outline-none focus:text-white focus:bg-gray-700": true,
 			"text-white bg-gray-900":                           active,
 			"text-gray-300 hover:text-white hover:bg-gray-700": !active,
@@ -104,25 +102,25 @@ func NavbarLink(path, text string, active bool) g.Node {
 	)
 }
 
-func Container(children ...g.Node) g.Node {
-	return Div(Class("max-w-7xl mx-auto px-2 sm:px-6 lg:px-8"), g.Group(children))
+func Container(children ...Node) Node {
+	return Div(Class("max-w-7xl mx-auto px-2 sm:px-6 lg:px-8"), Group(children))
 }
 
-func Prose(children ...g.Node) g.Node {
-	return Div(Class("prose"), g.Group(children))
+func Prose(children ...Node) Node {
+	return Div(Class("prose"), Group(children))
 }
 
-func PageFooter() g.Node {
+func PageFooter() Node {
 	return Footer(Class("prose prose-sm prose-indigo"),
 		P(
 			// We can use string interpolation directly, like fmt.Sprintf.
-			g.Textf("Rendered %v. ", time.Now().Format(time.RFC3339)),
+			Textf("Rendered %v. ", time.Now().Format(time.RFC3339)),
 
 			// Conditional inclusion
-			g.If(time.Now().Second()%2 == 0, g.Text("It's an even second.")),
-			g.If(time.Now().Second()%2 == 1, g.Text("It's an odd second.")),
+			If(time.Now().Second()%2 == 0, Text("It's an even second.")),
+			If(time.Now().Second()%2 == 1, Text("It's an odd second.")),
 		),
 
-		P(A(Href("https://www.gomponents.com"), g.Text("gomponents"))),
+		P(A(Href("https://www.gomponents.com"), Text("gomponents"))),
 	)
 }

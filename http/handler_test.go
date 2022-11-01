@@ -1,4 +1,4 @@
-package http_test
+package http
 
 import (
 	"errors"
@@ -7,14 +7,13 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	g "github.com/maragudk/gomponents"
-	ghttp "github.com/maragudk/gomponents/http"
+	"github.com/melias122/html"
 )
 
 func TestAdapt(t *testing.T) {
 	t.Run("renders a node to the response writer", func(t *testing.T) {
-		h := ghttp.Adapt(func(w http.ResponseWriter, r *http.Request) (g.Node, error) {
-			return g.El("div"), nil
+		h := Adapt(func(w http.ResponseWriter, r *http.Request) (html.Node, error) {
+			return html.El("div"), nil
 		})
 		code, body := get(t, h)
 		if code != http.StatusOK {
@@ -26,7 +25,7 @@ func TestAdapt(t *testing.T) {
 	})
 
 	t.Run("renders nothing when returning nil node", func(t *testing.T) {
-		h := ghttp.Adapt(func(w http.ResponseWriter, r *http.Request) (g.Node, error) {
+		h := Adapt(func(w http.ResponseWriter, r *http.Request) (html.Node, error) {
 			return nil, nil
 		})
 		code, body := get(t, h)
@@ -39,7 +38,7 @@ func TestAdapt(t *testing.T) {
 	})
 
 	t.Run("errors with 500 if node cannot render", func(t *testing.T) {
-		h := ghttp.Adapt(func(w http.ResponseWriter, r *http.Request) (g.Node, error) {
+		h := Adapt(func(w http.ResponseWriter, r *http.Request) (html.Node, error) {
 			return erroringNode{}, nil
 		})
 		code, body := get(t, h)
@@ -52,8 +51,8 @@ func TestAdapt(t *testing.T) {
 	})
 
 	t.Run("errors with status code if error implements StatusCode method and renders node", func(t *testing.T) {
-		h := ghttp.Adapt(func(w http.ResponseWriter, r *http.Request) (g.Node, error) {
-			return g.El("div"), statusCodeError{http.StatusTeapot}
+		h := Adapt(func(w http.ResponseWriter, r *http.Request) (html.Node, error) {
+			return html.El("div"), statusCodeError{http.StatusTeapot}
 		})
 		code, body := get(t, h)
 		if code != http.StatusTeapot {
@@ -65,8 +64,8 @@ func TestAdapt(t *testing.T) {
 	})
 
 	t.Run("errors with 500 if other error and renders node", func(t *testing.T) {
-		h := ghttp.Adapt(func(w http.ResponseWriter, r *http.Request) (g.Node, error) {
-			return g.El("div"), errors.New("")
+		h := Adapt(func(w http.ResponseWriter, r *http.Request) (html.Node, error) {
+			return html.El("div"), errors.New("")
 		})
 		code, body := get(t, h)
 		if code != http.StatusInternalServerError {

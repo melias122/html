@@ -1,29 +1,29 @@
 package svg
 
 import (
-	g "github.com/maragudk/gomponents"
+	"github.com/melias122/html"
 )
 
-func ClipRule(v string) g.Node {
-	return g.Attr("clip-rule", v)
+func ClipRule(v string) html.Node {
+	return html.Attr("clip-rule", v)
 }
 
-func D(v string) g.Node {
-	return g.Attr("d", v)
+func D(v string) html.Node {
+	return html.Attr("d", v)
 }
 
-func Fill(v string) g.Node {
-	return g.Attr("fill", v)
+func Fill(v string) html.Node {
+	return html.Attr("fill", v)
 }
 
-func FillRule(v string) g.Node {
-	return g.Attr("fill-rule", v)
+func FillRule(v string) html.Node {
+	return html.Attr("fill-rule", v)
 }
 
-func Stroke(v string) g.Node {
-	return g.Attr("stroke", v)
+func Stroke(v string) html.Node {
+	return html.Attr("stroke", v)
 }
 
-func ViewBox(v string) g.Node {
-	return g.Attr("viewBox", v)
+func ViewBox(v string) html.Node {
+	return html.Attr("viewBox", v)
 }

@@ -1,13 +1,9 @@
-package html_test
+package html
 
 import (
 	"errors"
 	"fmt"
 	"testing"
-
-	g "github.com/maragudk/gomponents"
-	. "github.com/maragudk/gomponents/html"
-	"github.com/maragudk/gomponents/internal/assert"
 )
 
 type erroringWriter struct{}
@@ -18,17 +14,17 @@ func (w *erroringWriter) Write(p []byte) (n int, err error) {
 
 func TestDoctype(t *testing.T) {
 	t.Run("returns doctype and children", func(t *testing.T) {
-		assert.Equal(t, `<!doctype html><html></html>`, Doctype(g.El("html")))
+		Equal(t, `<!doctype html><html></html>`, Doctype(El("html")))
 	})
 
 	t.Run("errors on write error in Render", func(t *testing.T) {
-		err := Doctype(g.El("html")).Render(&erroringWriter{})
-		assert.Error(t, err)
+		err := Doctype(El("html")).Render(&erroringWriter{})
+		Error(t, err)
 	})
 }
 
 func TestSimpleElements(t *testing.T) {
-	cases := map[string]func(...g.Node) g.Node{
+	cases := map[string]func(...Node) Node{
 		"a":          A,
 		"abbr":       Abbr,
 		"address":    Address,
@@ -123,14 +119,14 @@ func TestSimpleElements(t *testing.T) {
 
 	for name, fn := range cases {
 		t.Run(fmt.Sprintf("should output %v", name), func(t *testing.T) {
-			n := fn(g.Attr("id", "hat"))
-			assert.Equal(t, fmt.Sprintf(`<%v id="hat"></%v>`, name, name), n)
+			n := fn(Attr("id", "hat"))
+			Equal(t, fmt.Sprintf(`<%v id="hat"></%v>`, name, name), n)
 		})
 	}
 }
 
 func TestSimpleVoidKindElements(t *testing.T) {
-	cases := map[string]func(...g.Node) g.Node{
+	cases := map[string]func(...Node) Node{
 		"area":   Area,
 		"base":   Base,
 		"br":     Br,
@@ -148,8 +144,29 @@ func TestSimpleVoidKindElements(t *testing.T) {
 
 	for name, fn := range cases {
 		t.Run(fmt.Sprintf("should output %v", name), func(t *testing.T) {
-			n := fn(g.Attr("id", "hat"))
-			assert.Equal(t, fmt.Sprintf(`<%v id="hat">`, name), n)
+			n := fn(Attr("id", "hat"))
+			Equal(t, fmt.Sprintf(`<%v id="hat">`, name), n)
 		})
 	}
+}
+
+func TestInputHidden(t *testing.T) {
+	t.Run("returns an input element with type hidden, and the given name and value", func(t *testing.T) {
+		n := InputHidden("id", "partyhat", Attr("class", "hat"))
+		Equal(t, `<input type="hidden" name="id" value="partyhat" class="hat">`, n)
+	})
+}
+
+func TestLinkStylesheet(t *testing.T) {
+	t.Run("returns a link element with rel stylesheet and the given href", func(t *testing.T) {
+		n := LinkStylesheet("style.css", Attr("media", "print"))
+		Equal(t, `<link rel="stylesheet" href="style.css" media="print">`, n)
+	})
+}
+
+func TestLinkPreload(t *testing.T) {
+	t.Run("returns a link element with rel preload and the given href and as", func(t *testing.T) {
+		n := LinkPreload("party.woff2", "font", Attr("type", "font/woff2"))
+		Equal(t, `<link rel="preload" href="party.woff2" as="font" type="font/woff2">`, n)
+	})
 }

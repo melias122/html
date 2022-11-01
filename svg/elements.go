@@ -3,13 +3,13 @@
 package svg
 
 import (
-	g "github.com/maragudk/gomponents"
+	"github.com/melias122/html"
 )
 
-func Path(children ...g.Node) g.Node {
-	return g.El("path", children...)
+func Path(children ...html.Node) html.Node {
+	return html.El("path", children...)
 }
 
-func SVG(children ...g.Node) g.Node {
-	return g.El("svg", g.Attr("xmlns", "http://www.w3.org/2000/svg"), g.Group(children))
+func SVG(children ...html.Node) html.Node {
+	return html.El("svg", html.Attr("xmlns", "http://www.w3.org/2000/svg"), html.Group(children))
 }

@@ -11,7 +11,7 @@
 // For higher-level HTML components, see the package components.
 // For SVG elements and attributes, see the package svg.
 // For HTTP helpers, see the package http.
-package gomponents
+package html
 
 import (
 	"fmt"

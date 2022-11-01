@@ -4,12 +4,12 @@ package http
 import (
 	"net/http"
 
-	g "github.com/maragudk/gomponents"
+	"github.com/melias122/html"
 )
 
 // Handler is like http.Handler but returns a Node and an error.
 // See Adapt for how errors are translated to HTTP responses.
-type Handler = func(http.ResponseWriter, *http.Request) (g.Node, error)
+type Handler = func(http.ResponseWriter, *http.Request) (html.Node, error)
 
 type errorWithStatusCode interface {
 	StatusCode() int

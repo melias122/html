@@ -1,7 +1,7 @@
 //go:build go1.18
 // +build go1.18
 
-package gomponents
+package html
 
 // Map a slice of anything to a slice of Nodes.
 func Map[T any](ts []T, cb func(T) Node) []Node {

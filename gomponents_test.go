@@ -1,20 +1,36 @@
-package gomponents_test
+package html
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"os"
 	"strings"
 	"testing"
-
-	g "github.com/maragudk/gomponents"
-	"github.com/maragudk/gomponents/internal/assert"
 )
+
+// Equal checks for equality between the given expected string and the rendered Node string.
+func Equal(t *testing.T, expected string, actual Node) {
+	t.Helper()
+
+	var b strings.Builder
+	_ = actual.Render(&b)
+	if expected != b.String() {
+		t.Fatalf(`expected "%v" but got "%v"`, expected, b.String())
+	}
+}
+
+// Error checks for a non-nil error.
+func Error(t *testing.T, err error) {
+	t.Helper()
+
+	if err == nil {
+		t.Fatal("error is nil")
+	}
+}
 
 func TestNodeFunc(t *testing.T) {
 	t.Run("implements fmt.Stringer", func(t *testing.T) {
-		fn := g.NodeFunc(func(w io.Writer) error {
+		fn := NodeFunc(func(w io.Writer) error {
 			_, _ = w.Write([]byte("hat"))
 			return nil
 		})
@@ -26,13 +42,13 @@ func TestNodeFunc(t *testing.T) {
 
 func TestAttr(t *testing.T) {
 	t.Run("renders just the local name with one argument", func(t *testing.T) {
-		a := g.Attr("required")
-		assert.Equal(t, " required", a)
+		a := Attr("required")
+		Equal(t, " required", a)
 	})
 
 	t.Run("renders the name and value when given two arguments", func(t *testing.T) {
-		a := g.Attr("id", "hat")
-		assert.Equal(t, ` id="hat"`, a)
+		a := Attr("id", "hat")
+		Equal(t, ` id="hat"`, a)
 	})
 
 	t.Run("panics with more than two arguments", func(t *testing.T) {
@@ -42,14 +58,14 @@ func TestAttr(t *testing.T) {
 				called = true
 			}
 		}()
-		g.Attr("name", "value", "what is this?")
+		Attr("name", "value", "what is this?")
 		if !called {
 			t.FailNow()
 		}
 	})
 
 	t.Run("implements fmt.Stringer", func(t *testing.T) {
-		a := g.Attr("required")
+		a := Attr("required")
 		s := fmt.Sprintf("%v", a)
 		if s != " required" {
 			t.FailNow()
@@ -57,35 +73,35 @@ func TestAttr(t *testing.T) {
 	})
 
 	t.Run("escapes attribute values", func(t *testing.T) {
-		a := g.Attr(`id`, `hat"><script`)
-		assert.Equal(t, ` id="hat&#34;&gt;&lt;script"`, a)
+		a := Attr(`id`, `hat"><script`)
+		Equal(t, ` id="hat&#34;&gt;&lt;script"`, a)
 	})
 }
 
 func BenchmarkAttr(b *testing.B) {
 	b.Run("boolean attributes", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			a := g.Attr("hat")
+			a := Attr("hat")
 			_ = a.Render(&strings.Builder{})
 		}
 	})
 
 	b.Run("name-value attributes", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			a := g.Attr("hat", "party")
+			a := Attr("hat", "party")
 			_ = a.Render(&strings.Builder{})
 		}
 	})
 }
 
 func ExampleAttr_bool() {
-	e := g.El("input", g.Attr("required"))
+	e := El("input", Attr("required"))
 	_ = e.Render(os.Stdout)
 	// Output: <input required>
 }
 
 func ExampleAttr_name_value() {
-	e := g.El("div", g.Attr("id", "hat"))
+	e := El("div", Attr("id", "hat"))
 	_ = e.Render(os.Stdout)
 	// Output: <div id="hat"></div>
 }
@@ -103,110 +119,104 @@ func (o outsider) Render(w io.Writer) error {
 
 func TestEl(t *testing.T) {
 	t.Run("renders an empty element if no children given", func(t *testing.T) {
-		e := g.El("div")
-		assert.Equal(t, "<div></div>", e)
+		e := El("div")
+		Equal(t, "<div></div>", e)
 	})
 
 	t.Run("renders an empty element without closing tag if it's a void kind element", func(t *testing.T) {
-		e := g.El("hr")
-		assert.Equal(t, "<hr>", e)
+		e := El("hr")
+		Equal(t, "<hr>", e)
 
-		e = g.El("br")
-		assert.Equal(t, "<br>", e)
+		e = El("br")
+		Equal(t, "<br>", e)
 
-		e = g.El("img")
-		assert.Equal(t, "<img>", e)
+		e = El("img")
+		Equal(t, "<img>", e)
 	})
 
 	t.Run("renders an empty element if only attributes given as children", func(t *testing.T) {
-		e := g.El("div", g.Attr("class", "hat"))
-		assert.Equal(t, `<div class="hat"></div>`, e)
+		e := El("div", Attr("class", "hat"))
+		Equal(t, `<div class="hat"></div>`, e)
 	})
 
 	t.Run("renders an element, attributes, and element children", func(t *testing.T) {
-		e := g.El("div", g.Attr("class", "hat"), g.El("br"))
-		assert.Equal(t, `<div class="hat"><br></div>`, e)
+		e := El("div", Attr("class", "hat"), El("br"))
+		Equal(t, `<div class="hat"><br></div>`, e)
 	})
 
 	t.Run("renders attributes at the correct place regardless of placement in parameter list", func(t *testing.T) {
-		e := g.El("div", g.El("br"), g.Attr("class", "hat"))
-		assert.Equal(t, `<div class="hat"><br></div>`, e)
+		e := El("div", El("br"), Attr("class", "hat"))
+		Equal(t, `<div class="hat"><br></div>`, e)
 	})
 
 	t.Run("renders outside if node does not implement nodeTypeDescriber", func(t *testing.T) {
-		e := g.El("div", outsider{})
-		assert.Equal(t, `<div>outsider</div>`, e)
+		e := El("div", outsider{})
+		Equal(t, `<div>outsider</div>`, e)
 	})
 
 	t.Run("does not fail on nil node", func(t *testing.T) {
-		e := g.El("div", nil, g.El("br"), nil, g.El("br"))
-		assert.Equal(t, `<div><br><br></div>`, e)
+		e := El("div", nil, El("br"), nil, El("br"))
+		Equal(t, `<div><br><br></div>`, e)
 	})
 
 	t.Run("returns render error on cannot write", func(t *testing.T) {
-		e := g.El("div")
+		e := El("div")
 		err := e.Render(&erroringWriter{})
-		assert.Error(t, err)
+		Error(t, err)
 	})
 }
 
 func BenchmarkEl(b *testing.B) {
 	b.Run("normal elements", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {
-			e := g.El("div")
+			e := El("div")
 			_ = e.Render(&strings.Builder{})
 		}
 	})
 }
 
 func ExampleEl() {
-	e := g.El("div", g.El("span"))
+	e := El("div", El("span"))
 	_ = e.Render(os.Stdout)
 	// Output: <div><span></span></div>
 }
 
-type erroringWriter struct{}
-
-func (w *erroringWriter) Write(p []byte) (n int, err error) {
-	return 0, errors.New("no thanks")
-}
-
 func TestText(t *testing.T) {
 	t.Run("renders escaped text", func(t *testing.T) {
-		e := g.Text("<div>")
-		assert.Equal(t, "&lt;div&gt;", e)
+		e := Text("<div>")
+		Equal(t, "&lt;div&gt;", e)
 	})
 }
 
 func ExampleText() {
-	e := g.El("span", g.Text("Party hats > normal hats."))
+	e := El("span", Text("Party hats > normal hats."))
 	_ = e.Render(os.Stdout)
 	// Output: <span>Party hats &gt; normal hats.</span>
 }
 
 func TestTextf(t *testing.T) {
 	t.Run("renders interpolated and escaped text", func(t *testing.T) {
-		e := g.Textf("<%v>", "div")
-		assert.Equal(t, "&lt;div&gt;", e)
+		e := Textf("<%v>", "div")
+		Equal(t, "&lt;div&gt;", e)
 	})
 }
 
 func ExampleTextf() {
-	e := g.El("span", g.Textf("%v party hats > %v normal hats.", 2, 3))
+	e := El("span", Textf("%v party hats > %v normal hats.", 2, 3))
 	_ = e.Render(os.Stdout)
 	// Output: <span>2 party hats &gt; 3 normal hats.</span>
 }
 
 func TestRaw(t *testing.T) {
 	t.Run("renders raw text", func(t *testing.T) {
-		e := g.Raw("<div>")
-		assert.Equal(t, "<div>", e)
+		e := Raw("<div>")
+		Equal(t, "<div>", e)
 	})
 }
 
 func ExampleRaw() {
-	e := g.El("span",
-		g.Raw(`<button onclick="javascript:alert('Party time!')">Party hats</button> &gt; normal hats.`),
+	e := El("span",
+		Raw(`<button onclick="javascript:alert('Party time!')">Party hats</button> &gt; normal hats.`),
 	)
 	_ = e.Render(os.Stdout)
 	// Output: <span><button onclick="javascript:alert('Party time!')">Party hats</button> &gt; normal hats.</span>
@@ -214,13 +224,13 @@ func ExampleRaw() {
 
 func TestGroup(t *testing.T) {
 	t.Run("groups multiple nodes into one", func(t *testing.T) {
-		children := []g.Node{g.El("br", g.Attr("id", "hat")), g.El("hr")}
-		e := g.El("div", g.Attr("class", "foo"), g.El("img"), g.Group(children))
-		assert.Equal(t, `<div class="foo"><img><br id="hat"><hr></div>`, e)
+		children := []Node{El("br", Attr("id", "hat")), El("hr")}
+		e := El("div", Attr("class", "foo"), El("img"), Group(children))
+		Equal(t, `<div class="foo"><img><br id="hat"><hr></div>`, e)
 	})
 
 	t.Run("panics on direct render", func(t *testing.T) {
-		e := g.Group(nil)
+		e := Group(nil)
 		panicked := false
 		defer func() {
 			if err := recover(); err != nil {
@@ -234,7 +244,7 @@ func TestGroup(t *testing.T) {
 	})
 
 	t.Run("panics on direct string", func(t *testing.T) {
-		e := g.Group(nil).(fmt.Stringer)
+		e := Group(nil).(fmt.Stringer)
 		panicked := false
 		defer func() {
 			if err := recover(); err != nil {
@@ -250,21 +260,21 @@ func TestGroup(t *testing.T) {
 
 func TestIf(t *testing.T) {
 	t.Run("returns node if condition is true", func(t *testing.T) {
-		n := g.El("div", g.If(true, g.El("span")))
-		assert.Equal(t, "<div><span></span></div>", n)
+		n := El("div", If(true, El("span")))
+		Equal(t, "<div><span></span></div>", n)
 	})
 
 	t.Run("returns nil if condition is false", func(t *testing.T) {
-		n := g.El("div", g.If(false, g.El("span")))
-		assert.Equal(t, "<div></div>", n)
+		n := El("div", If(false, El("span")))
+		Equal(t, "<div></div>", n)
 	})
 }
 
 func ExampleIf() {
 	showMessage := true
-	e := g.El("div",
-		g.If(showMessage, g.El("span", g.Text("You lost your hat!"))),
-		g.If(!showMessage, g.El("span", g.Text("No messages."))),
+	e := El("div",
+		If(showMessage, El("span", Text("You lost your hat!"))),
+		If(!showMessage, El("span", Text("No messages."))),
 	)
 	_ = e.Render(os.Stdout)
 	// Output: <div><span>You lost your hat!</span></div>
